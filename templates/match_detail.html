@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}{{ match.team_a.name }} vs {{ match.team_b.name }} · SPL{% endblock %}
+{% block content %}
+  <div class="container breadcrumb">
+    <a href="{% url 'matches' %}">Match centre</a>
+    <span>/</span>
+    <span>Season {{ match.tournament.season }} · {{ match.stage|default:'Match' }}</span>
+  </div>
+  <section class="match-heading">
+    <div class="container">
+      <div class="match-heading-meta">
+        <span{% if match.status == 'live' %} class="live-label"{% endif %}>{{ match.get_status_display }}</span>
+        <span>Season {{ match.tournament.season }} · {{ match.stage }}</span>
+        <span>{{ match.date|date:'d M Y'|default:'Date to be announced' }}</span>
+        <span>{{ match.ground }}</span>
+      </div>
+      <div class="match-scoreline">
+        {% with score=match|score_for:match.team_a %}
+          <div>
+            {% include "components/team_mark.html" with team=match.team_a size="large" %}
+            <div>
+              <h1>{{ match.team_a.name }}</h1>
+              <strong class="match-big-score">{{ score.score }}{% if score.overs %}
+                <small>({{ score.overs }} ov)</small>
+        {% endif %}
+      </strong>
+    </div>
+  </div>
+{% endwith %}
+<span class="versus">VS</span>
+{% with score=match|score_for:match.team_b %}
+  <div>
+    {% include "components/team_mark.html" with team=match.team_b size="large" %}
+    <div>
+      <h2>{{ match.team_b.name }}</h2>
+      <strong class="match-big-score">{{ score.score }}{% if score.overs %}
+        <small>({{ score.overs }} ov)</small>
+{% endif %}
+</strong>
+</div>
+</div>
+{% endwith %}
+</div>
+<div class="match-outcome">
+  <strong>{{ match.result_text|default:match.get_status_display }}</strong>
+  {% if match.status == "live" %}
+    <a class="btn btn-light" href="{% url 'live_match' match.pk %}">
+      {% if user.is_staff %}Open live scoring{% else %}Follow live{% endif %}
+    </a>
+  {% endif %}
+</div>
+</div>
+</section>
+<div class="match-subnav">
+  <div class="container">
+    <div class="tabs" role="tablist" aria-label="Match information">
+      <button type="button"
+              role="tab"
+              aria-selected="true"
+              id="scorecard-tab"
+              aria-controls="match-scorecard">Scorecard</button>
+      <button type="button"
+              role="tab"
+              aria-selected="false"
+              id="information-tab"
+              aria-controls="match-info"
+              tabindex="-1">Match info</button>
+      <button type="button"
+              role="tab"
+              aria-selected="false"
+              id="source-tab"
+              aria-controls="match-source"
+              tabindex="-1">Source record</button>
+      <a class="text-link" href="{% url 'live_match' match.pk %}">Ball-by-ball</a>
+    </div>
+  </div>
+</div>
+<div class="container section">
+  <div id="match-scorecard" role="tabpanel" aria-labelledby="scorecard-tab">
+    {% for inn in match.full_scorecard.innings %}
+      <section class="innings-panel">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">INNINGS {{ forloop.counter }}</p>
+            <h2>{{ inn.team }}</h2>
+          </div>
+          <span>
+            <strong>{{ inn.runs }}/{{ inn.wickets }}</strong> · {{ inn.overs }} overs</span>
+        </div>
+        <div class="table-wrap"
+             tabindex="0"
+             role="region"
+             aria-label="{{ inn.team }} batting scorecard">
+          <table class="score-table">
+            <caption>Batting</caption>
+            <thead>
+              <tr>
+                <th>Batter</th>
+                <th>Dismissal</th>
+                <th class="numeric">R</th>
+                <th class="numeric">B</th>
+                <th class="numeric">4s</th>
+                <th class="numeric">6s</th>
+                <th class="numeric">SR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for batter in inn.batting %}
+                <tr>
+                  <td class="name-cell">{{ batter.name }}</td>
+                  <td class="dismissal">{{ batter.status|default:'—' }}</td>
+                  <td class="numeric">
+                    <strong>{{ batter.runs }}</strong>
+                  </td>
+                  <td class="numeric">{{ batter.balls }}</td>
+                  <td class="numeric">{{ batter.fours }}</td>
+                  <td class="numeric">{{ batter.sixes }}</td>
+                  <td class="numeric">{{ batter.strike_rate }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="7">Batting figures not available.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="innings-total">
+          <span>Total</span>
+          <span>{{ inn.runs }}/{{ inn.wickets }} ({{ inn.overs }} ov)</span>
+        </div>
+        {% if inn.extras %}
+          <p class="innings-note">
+            <strong>Extras:</strong> {% for key,value in inn.extras.items %}{{ key }} {{ value }}{% if not forloop.last %} · {% endif %}
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if inn.to_bat %}
+      <p class="innings-note">
+        <strong>Yet to bat:</strong> {{ inn.to_bat|join:', ' }}
+      </p>
+    {% endif %}
+    {% if inn.fall_of_wickets %}
+      <p class="innings-note">
+        <strong>Fall of wickets:</strong> {{ inn.fall_of_wickets }}
+      </p>
+    {% endif %}
+    <div class="table-wrap"
+         tabindex="0"
+         role="region"
+         aria-label="{{ inn.team }} innings bowling figures">
+      <table class="score-table">
+        <caption>Bowling</caption>
+        <thead>
+          <tr>
+            <th>Bowler</th>
+            <th class="numeric">O</th>
+            <th class="numeric">M</th>
+            <th class="numeric">R</th>
+            <th class="numeric">W</th>
+            <th class="numeric">Dots</th>
+            <th class="numeric">4s</th>
+            <th class="numeric">6s</th>
+            <th class="numeric">WD</th>
+            <th class="numeric">NB</th>
+            <th class="numeric">Eco</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bowler in inn.bowling %}
+            <tr>
+              <td class="name-cell">{{ bowler.name }}</td>
+              <td class="numeric">{{ bowler.overs }}</td>
+              <td class="numeric">{{ bowler.maidens }}</td>
+              <td class="numeric">{{ bowler.runs }}</td>
+              <td class="numeric">
+                <strong>{{ bowler.wickets }}</strong>
+              </td>
+              <td class="numeric">{{ bowler.dot_balls }}</td>
+              <td class="numeric">{{ bowler.fours_conceded }}</td>
+              <td class="numeric">{{ bowler.sixes_conceded }}</td>
+              <td class="numeric">{{ bowler.wides }}</td>
+              <td class="numeric">{{ bowler.no_balls }}</td>
+              <td class="numeric">{{ bowler.economy }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="11">Bowling figures not available.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% empty %}
+  {% if live_innings %}
+    <h2 class="tab-title">Recorded innings</h2>
+    {% for inn in live_innings %}
+      <div class="data-panel">
+        <p class="eyebrow">INNINGS {{ inn.innings_number }}</p>
+        <h3>{{ inn.batting_team.name }} · {{ inn.total_runs }}/{{ inn.wickets }}</h3>
+        <p>{{ inn.legal_balls|overs }} overs</p>
+      </div>
+    {% endfor %}
+  {% endif %}
+  <div class="two-col">
+    <section class="data-panel">
+      <h3>Batting highlights</h3>
+      {% for row in match.best_batters %}
+        <p>
+          {{ row.name }} · <strong>{{ row.runs }} runs</strong>
+        </p>
+      {% empty %}
+        <p>Detailed batting figures are not available for this match.</p>
+      {% endfor %}
+    </section>
+    <section class="data-panel">
+      <h3>Bowling highlights</h3>
+      {% for row in match.best_bowlers %}
+        <p>
+          {{ row.name }} · <strong>{{ row.wickets }} wickets</strong>
+        </p>
+      {% empty %}
+        <p>Detailed bowling figures are not available for this match.</p>
+      {% endfor %}
+    </section>
+  </div>
+{% endfor %}
+</div>
+<div id="match-info"
+     role="tabpanel"
+     aria-labelledby="information-tab"
+     hidden>
+  <h2 class="tab-title">Match information</h2>
+  <dl class="info-list">
+    <div>
+      <dt>Tournament</dt>
+      <dd>
+        {{ match.tournament.name }} · Season {{ match.tournament.season }}
+      </dd>
+    </div>
+    <div>
+      <dt>Stage</dt>
+      <dd>
+        {{ match.stage|default:'Not recorded' }}
+      </dd>
+    </div>
+    <div>
+      <dt>Date</dt>
+      <dd>
+        {{ match.date|date:'d F Y'|default:'Not recorded' }}
+      </dd>
+    </div>
+    <div>
+      <dt>Venue</dt>
+      <dd>
+        {{ match.ground|default:'Not recorded' }}
+      </dd>
+    </div>
+    <div>
+      <dt>Toss</dt>
+      <dd>
+        {{ match.toss|default:'Not recorded' }}
+      </dd>
+    </div>
+    <div>
+      <dt>Result</dt>
+      <dd>
+        {{ match.result_text|default:'Not recorded' }}
+      </dd>
+    </div>
+  </dl>
+</div>
+<div id="match-source" role="tabpanel" aria-labelledby="source-tab" hidden>
+  <h2 class="tab-title">The original record</h2>
+  <p class="body-copy">Historical figures are shown from the recorded scorecard. Delivery-by-delivery data may not be available.</p>
+  {% if match.cricheroes_url %}
+    <a class="text-link"
+       href="{{ match.cricheroes_url }}"
+       target="_blank"
+       rel="noopener noreferrer">View on CricHeroes</a>
+  {% endif %}
+  {% if match.scorecard_text %}
+    <details class="score-text">
+      <summary>Read extracted scorecard text</summary>
+      <pre>{{ match.scorecard_text }}</pre>
+    </details>
+  {% else %}
+    <div class="empty-state">
+      <p>No extracted source text recorded.</p>
+    </div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

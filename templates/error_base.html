@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="container section error-page">
+    <p class="eyebrow">SINDHI PREMIER LEAGUE</p>
+    <span class="error-code" aria-hidden="true">{% block error_code %}{% endblock %}</span>
+    <h1>{% block error_heading %}{% endblock %}</h1>
+    <p class="body-copy">{% block error_message %}{% endblock %}</p>
+    <div class="actions">
+      <a class="btn" href="{% url 'home' %}">Back to the league</a>
+      <a class="btn btn-outline" href="{% url 'matches' %}">Match centre</a>
+    </div>
+  </section>
+{% endblock %}

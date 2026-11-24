@@ -1,0 +1,41 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Python environments, caches, and test output
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.ruff_cache/
+
+# Runtime databases and private backups (keep historical source data in data/)
+*.sqlite3
+*.sqlite3-*
+*.db
+backups/
+*.manifest.json
+media/
+staticfiles/
+logs/
+*.log
+
+# Generated assets and archives
+node_modules/
+dist/
+build/
+test-results/
+playwright-report/
+splfinal.zip
+*.tmp
+*.bak
+.DS_Store
+.idea/
+.vscode/

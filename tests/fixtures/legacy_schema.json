@@ -1,0 +1,1021 @@
+{
+  "league_contactenquiry": {
+    "columns": [
+      [
+        "created_at",
+        "datetime",
+        1,
+        null,
+        0
+      ],
+      [
+        "email",
+        "varchar(254)",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "is_resolved",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "message",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "name",
+        "varchar(120)",
+        1,
+        null,
+        0
+      ],
+      [
+        "phone",
+        "varchar(30)",
+        1,
+        null,
+        0
+      ],
+      [
+        "subject",
+        "varchar(160)",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [],
+    "indexes": [],
+    "checks": []
+  },
+  "league_delivery": {
+    "columns": [
+      [
+        "ball_number",
+        "smallint unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "batter_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "batter_runs",
+        "smallint unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "bowler_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "dismissal_type",
+        "varchar(20)",
+        1,
+        null,
+        0
+      ],
+      [
+        "dismissed_player_id",
+        "bigint",
+        0,
+        null,
+        0
+      ],
+      [
+        "extra_runs",
+        "smallint unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "extra_type",
+        "varchar(12)",
+        1,
+        null,
+        0
+      ],
+      [
+        "fielder_id",
+        "bigint",
+        0,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "innings_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "is_legal",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "over_number",
+        "smallint unsigned",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_innings",
+        "innings_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_player",
+        "batter_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_player",
+        "bowler_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_player",
+        "dismissed_player_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_player",
+        "fielder_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "batter_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "bowler_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "dismissed_player_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "fielder_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "innings_id"
+        ]
+      ]
+    ],
+    "checks": [
+      "\"ball_number\" >= 0",
+      "\"batter_runs\" >= 0",
+      "\"extra_runs\" >= 0",
+      "\"over_number\" >= 0"
+    ]
+  },
+  "league_innings": {
+    "columns": [
+      [
+        "batting_team_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "bowling_team_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "innings_number",
+        "smallint unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "legal_balls",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "match_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "total_runs",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "wickets",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_match",
+        "match_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "batting_team_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "bowling_team_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "batting_team_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "bowling_team_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "match_id"
+        ]
+      ],
+      [
+        true,
+        [
+          "match_id",
+          "innings_number"
+        ]
+      ]
+    ],
+    "checks": [
+      "\"innings_number\" >= 0",
+      "\"legal_balls\" >= 0",
+      "\"total_runs\" >= 0",
+      "\"wickets\" >= 0"
+    ]
+  },
+  "league_match": {
+    "columns": [
+      [
+        "best_batters",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "best_bowlers",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "cricheroes_url",
+        "varchar(200)",
+        1,
+        null,
+        0
+      ],
+      [
+        "date",
+        "date",
+        0,
+        null,
+        0
+      ],
+      [
+        "full_scorecard",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "ground",
+        "varchar(180)",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "match_number",
+        "integer unsigned",
+        0,
+        null,
+        0
+      ],
+      [
+        "result_text",
+        "varchar(255)",
+        1,
+        null,
+        0
+      ],
+      [
+        "score_summaries",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "scorecard_text",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "stage",
+        "varchar(80)",
+        1,
+        null,
+        0
+      ],
+      [
+        "status",
+        "varchar(15)",
+        1,
+        null,
+        0
+      ],
+      [
+        "team_a_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "team_b_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "toss",
+        "varchar(255)",
+        1,
+        null,
+        0
+      ],
+      [
+        "tournament_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "winner_id",
+        "bigint",
+        0,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_team",
+        "team_a_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "team_b_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "winner_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_tournament",
+        "tournament_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "team_a_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "team_b_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "tournament_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "winner_id"
+        ]
+      ]
+    ],
+    "checks": [
+      "\"match_number\" >= 0",
+      "(JSON_VALID(\"best_batters\") OR \"best_batters\" IS NULL)",
+      "(JSON_VALID(\"best_bowlers\") OR \"best_bowlers\" IS NULL)",
+      "(JSON_VALID(\"full_scorecard\") OR \"full_scorecard\" IS NULL)",
+      "(JSON_VALID(\"score_summaries\") OR \"score_summaries\" IS NULL)"
+    ]
+  },
+  "league_player": {
+    "columns": [
+      [
+        "city",
+        "varchar(100)",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "is_active",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "name",
+        "varchar(120)",
+        1,
+        null,
+        0
+      ],
+      [
+        "photo",
+        "varchar(100)",
+        0,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [],
+    "indexes": [],
+    "checks": []
+  },
+  "league_player_teams": {
+    "columns": [
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "player_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "team_id",
+        "bigint",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_player",
+        "player_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "team_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "player_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "team_id"
+        ]
+      ],
+      [
+        true,
+        [
+          "player_id",
+          "team_id"
+        ]
+      ]
+    ],
+    "checks": []
+  },
+  "league_playermatchstat": {
+    "columns": [
+      [
+        "balls_faced",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "batting_dismissed",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "bowling_maidens",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "bowling_overs",
+        "varchar(12)",
+        1,
+        null,
+        0
+      ],
+      [
+        "bowling_runs",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "dot_balls",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "fours",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "match_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "played_in_squad",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "player_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "runs",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "sixes",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "team_id",
+        "bigint",
+        1,
+        null,
+        0
+      ],
+      [
+        "wickets",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_match",
+        "match_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_player",
+        "player_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ],
+      [
+        "league_team",
+        "team_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "match_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "player_id"
+        ]
+      ],
+      [
+        false,
+        [
+          "team_id"
+        ]
+      ],
+      [
+        true,
+        [
+          "match_id",
+          "player_id"
+        ]
+      ]
+    ],
+    "checks": [
+      "\"balls_faced\" >= 0",
+      "\"bowling_maidens\" >= 0",
+      "\"bowling_runs\" >= 0",
+      "\"dot_balls\" >= 0",
+      "\"fours\" >= 0",
+      "\"runs\" >= 0",
+      "\"sixes\" >= 0",
+      "\"wickets\" >= 0"
+    ]
+  },
+  "league_sponsor": {
+    "columns": [
+      [
+        "category",
+        "varchar(12)",
+        1,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "logo",
+        "varchar(100)",
+        0,
+        null,
+        0
+      ],
+      [
+        "name",
+        "varchar(150)",
+        1,
+        null,
+        0
+      ],
+      [
+        "website",
+        "varchar(200)",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [],
+    "indexes": [],
+    "checks": []
+  },
+  "league_team": {
+    "columns": [
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "logo",
+        "varchar(100)",
+        0,
+        null,
+        0
+      ],
+      [
+        "name",
+        "varchar(120)",
+        1,
+        null,
+        0
+      ],
+      [
+        "primary_colour",
+        "varchar(7)",
+        1,
+        null,
+        0
+      ],
+      [
+        "short_name",
+        "varchar(20)",
+        1,
+        null,
+        0
+      ],
+      [
+        "tournament_id",
+        "bigint",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [
+      [
+        "league_tournament",
+        "tournament_id",
+        "id",
+        "NO ACTION",
+        "NO ACTION",
+        "NONE"
+      ]
+    ],
+    "indexes": [
+      [
+        false,
+        [
+          "tournament_id"
+        ]
+      ],
+      [
+        true,
+        [
+          "tournament_id",
+          "name"
+        ]
+      ]
+    ],
+    "checks": []
+  },
+  "league_tournament": {
+    "columns": [
+      [
+        "description",
+        "TEXT",
+        1,
+        null,
+        0
+      ],
+      [
+        "end_date",
+        "date",
+        0,
+        null,
+        0
+      ],
+      [
+        "id",
+        "INTEGER",
+        1,
+        null,
+        1
+      ],
+      [
+        "is_current",
+        "bool",
+        1,
+        null,
+        0
+      ],
+      [
+        "name",
+        "varchar(150)",
+        1,
+        null,
+        0
+      ],
+      [
+        "season",
+        "integer unsigned",
+        1,
+        null,
+        0
+      ],
+      [
+        "start_date",
+        "date",
+        0,
+        null,
+        0
+      ],
+      [
+        "venue",
+        "varchar(180)",
+        1,
+        null,
+        0
+      ]
+    ],
+    "foreign_keys": [],
+    "indexes": [
+      [
+        true,
+        [
+          "season"
+        ]
+      ]
+    ],
+    "checks": [
+      "\"season\" >= 0"
+    ]
+  }
+}

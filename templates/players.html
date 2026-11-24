@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}Players · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">THE PEOPLE WHO MAKE THE GAME</p>
+      <div class="page-title-row">
+        <h1>Meet the players.</h1>
+        <span class="page-count">{{ players|length }} players</span>
+      </div>
+      <p class="lead">Homegrown talent. Standout performances. Every player has a story.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <form class="filter-bar" method="get" role="search">
+      <label for="player-search">
+        Find a player<input type="search"
+                            id="player-search"
+                            name="q"
+                            value="{{ request.GET.q }}"
+                            placeholder="Search by player name"
+                            autocomplete="off">
+      </label>
+      <button class="btn" type="submit">Search players</button>
+      {% if request.GET.q %}
+        <a class="text-link" href="{% url 'players' %}">Clear search</a>
+      {% endif %}
+    </form>
+    <div class="players-grid" data-reveal-list data-limit="24">
+      {% for player in players %}
+        <article>
+          {% include "components/player_tile.html" %}
+          <p class="player-list-detail muted">{{ player.matches_played_count }} recorded matches</p>
+        </article>
+      {% empty %}
+        <div class="empty-state">
+          <h2>No players found.</h2>
+          <p>Try a different name or clear your search to see the full line-up.</p>
+        </div>
+      {% endfor %}
+    </div>
+    <button class="show-more" data-reveal-button type="button" hidden>Show more players</button>
+  </section>
+{% endblock %}

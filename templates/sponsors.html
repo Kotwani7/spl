@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Our partners · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">BEHIND EVERY GREAT LEAGUE</p>
+      <h1>Backing the game.</h1>
+      <p class="lead">The businesses and supporters helping community cricket thrive.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <h2>Our partners.</h2>
+    <div class="sponsor-wall">
+      {% for sponsor in sponsors %}
+        <article class="sponsor-card">
+          {% if sponsor.logo %}
+            <img src="{{ sponsor.logo.url }}"
+                 alt="{{ sponsor.name }}"
+                 loading="lazy"
+                 width="240"
+                 height="110">
+          {% endif %}
+          <span class="image-fallback" aria-hidden="true">{{ sponsor.name|first }}</span>
+          <p class="eyebrow">{{ sponsor.get_category_display }}</p>
+          <h3>{{ sponsor.name }}</h3>
+          {% if sponsor.website %}
+            <a class="text-link"
+               href="{{ sponsor.website }}"
+               target="_blank"
+               rel="noopener noreferrer">Visit partner website</a>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="empty-state">
+          <h3>Help write the next chapter.</h3>
+          <p>Sponsorship announcements will appear here when confirmed.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="dark-panel section">
+    <div class="container two-col">
+      <div>
+        <p class="eyebrow">GROW THE GAME WITH US</p>
+        <h2>
+          Your business.
+          <br>
+          Our community.
+        </h2>
+      </div>
+      <div>
+        <p class="body-copy section-intro">Connect your brand with the players, teams and supporters at the heart of SPL.</p>
+        <a class="btn btn-light" href="{% url 'contact' %}">Become a partner</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

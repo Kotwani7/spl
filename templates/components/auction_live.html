@@ -1,0 +1,147 @@
+{% load league_ui %}
+<div id="auction-live-fragment" data-auction-status="{{ auction.status|default:'none' }}">
+{% if auction %}
+  <div class="auction-broadcast-bar">
+    <div>
+      <span class="auction-season-label">{{ auction.tournament.name }} · Season {{ auction.tournament.season }}</span>
+      <strong>{{ auction.name }}</strong>
+    </div>
+    <span class="auction-refresh-note">{% if auction.status == "running" %}<span class="live-dot"></span> Live updates every 12 seconds{% else %}{{ auction.get_status_display }}{% endif %}<button class="btn btn-outline auction-projector-toggle" type="button" data-projector>Projector</button></span>
+  </div>
+  <div class="auction-scoreboard" aria-label="Auction progress">
+    <div><span>Players in pool</span><strong>{{ total_lots }}</strong></div>
+    <div><span>Sold</span><strong>{{ sold_count }}</strong></div>
+    <div><span>Unsold</span><strong>{{ unsold_count }}</strong></div>
+    <div><span>To come</span><strong>{{ queued_count }}</strong></div>
+  </div>
+
+  <div class="auction-showcase-grid">
+    <section class="auction-player-card" aria-label="Current player">
+      {% if current_lot %}
+        <div class="auction-photo-wrap">
+          {% if current_lot.player.photo %}
+            <img class="auction-player-photo" src="{{ current_lot.player.photo.url }}" alt="{{ current_lot.player.name }}" loading="eager">
+          {% else %}
+            <div class="auction-player-fallback" aria-label="No player photograph available"><span>{{ current_lot.player.name|initials }}</span><small>SPL PLAYER</small></div>
+          {% endif %}
+          <span class="auction-lot-number">LOT {{ current_lot.position|stringformat:"02d" }}</span>
+          {% if current_lot.is_marquee %}<span class="marquee-badge">✦ MARQUEE PLAYER</span>{% endif %}
+        </div>
+        <div class="auction-player-copy">
+          <p class="eyebrow">{{ current_lot.category_name|default:"PLAYER" }}</p>
+          <h2>{{ current_lot.player.name }}</h2>
+          <p class="auction-player-detail">{{ current_lot.player.city|default:"SPL player pool" }}{% if current_player_stats.appearances %} · {{ current_player_stats.appearances }} scorecard appearances{% endif %}</p>
+          <div class="auction-player-stats">
+            {% if current_player_stats.runs %}<span><b>{{ current_player_stats.runs }}</b><small>RECORDED RUNS</small></span>{% endif %}
+            {% if current_player_stats.wickets %}<span><b>{{ current_player_stats.wickets }}</b><small>RECORDED WICKETS</small></span>{% endif %}
+            <span><b>₹{{ current_lot.base_price|inr }}</b><small>BASE PRICE</small></span>
+          </div>
+        </div>
+      {% else %}
+        <div class="auction-empty-player">
+          <span class="auction-empty-mark">SPL</span>
+          {% if auction.status == "draft" or auction.status == "ready" %}
+            <p class="eyebrow">THE STAGE IS SET</p><h2>First player, next.</h2>
+            <p>The auctioneer will introduce the first player when the auction opens.</p>
+          {% elif auction.status == "paused" %}
+            <p class="eyebrow">AUCTION PAUSED</p><h2>We’ll be right back.</h2>
+            <p>The player queue and bid history are saved. The organiser can resume play.</p>
+          {% else %}
+            <p class="eyebrow">AUCTION COMPLETE</p><h2>That’s a wrap.</h2>
+            <p>All queued players have a recorded result.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="auction-bid-card" aria-label="Current bid">
+      {% if current_lot %}
+        <div class="auction-live-kicker{% if auction.status == 'paused' %} is-paused{% endif %}">{% if auction.status == 'running' %}<span class="live-dot"></span>{% else %}<span class="pause-dot"></span>{% endif %}{{ auction.get_status_display }} · LOT {{ current_lot.position|stringformat:"02d" }}</div>
+        <p class="eyebrow">CURRENT BID</p>
+        {% if current_lot.highest_team %}
+          <strong class="auction-current-bid">₹{{ current_lot.current_bid|inr }}</strong>
+          <div class="auction-leading-team">
+            {% if current_lot.highest_team.logo %}<img src="{{ current_lot.highest_team.logo.url }}" alt="" loading="lazy">{% else %}<span class="auction-team-mark">{{ current_lot.highest_team.short_name|default:current_lot.highest_team.name|initials }}</span>{% endif %}
+            <div><small>HIGHEST BIDDER</small><b>{{ current_lot.highest_team.name }}</b></div>
+          </div>
+        {% else %}
+          <strong class="auction-current-bid is-unset">—</strong>
+          <div class="auction-leading-team is-awaiting"><span class="auction-team-mark">?</span><div><small>OPENING PRICE</small><b>₹{{ current_lot.base_price|inr }}</b></div></div>
+        {% endif %}
+        <div class="auction-next-bid"><span>Next bid from</span><b>₹{{ current_lot.next_bid|inr }}</b><small>Increment ₹{{ auction.bid_increment|inr }}</small></div>
+        {% if current_lot.status == "current" %}<span class="auction-on-block">PLAYER ON THE BLOCK</span>{% endif %}
+      {% else %}
+        <div class="auction-no-bid">
+          <p class="eyebrow">{{ auction.get_status_display|upper }}</p>
+          <strong class="auction-current-bid is-unset">—</strong>
+          <h2>{% if auction.status == "finalized" %}Auction complete{% else %}The next bid is waiting.{% endif %}</h2>
+          <p>{% if auction.status == "ready" %}The auction is staged. Follow along as the organiser brings the first player to the block.{% else %}Live bid information will appear here when a player is on the block.{% endif %}</p>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="auction-broadcast-columns">
+    <section class="auction-panel auction-purses">
+      <div class="auction-section-heading"><div><p class="eyebrow">THE FRANCHISES</p><h2>Team purses</h2></div><span>{{ team_purses|length }} teams</span></div>
+      {% if team_purses %}
+        <div class="auction-team-grid">
+          {% for purse in team_purses %}
+            <article class="auction-team-card" style="--team-colour:{{ purse.team.primary_colour|team_colour }}">
+              <div class="auction-team-card-head">
+                {% if purse.team.logo %}<img src="{{ purse.team.logo.url }}" alt="" loading="lazy">{% else %}<span class="auction-team-mark">{{ purse.team.short_name|default:purse.team.name|initials }}</span>{% endif %}
+                <strong>{{ purse.team.name }}</strong>
+              </div>
+              <div class="auction-purse-numbers"><span>Remaining<strong>₹{{ purse.remaining|inr }}</strong></span><span>Spent<strong>₹{{ purse.spent|inr }}</strong></span></div>
+              <div class="auction-purse-meter" role="img" aria-label="{{ purse.spent|inr }} of {{ purse.budget|inr }} rupees spent"><i style="width:{{ purse.percent_spent }}%"></i></div>
+              <small>{{ purse.acquired_count }} player{{ purse.acquired_count|pluralize }} acquired · ₹{{ purse.budget|inr }} purse</small>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}<p class="auction-muted">Team purses will appear when the organiser configures this auction.</p>{% endif %}
+    </section>
+    <section class="auction-panel auction-history-panel">
+      <div class="auction-section-heading"><div><p class="eyebrow">THE BIDDING</p><h2>Recent bids</h2></div><span>Most recent</span></div>
+      {% if recent_bids %}<ol class="auction-bid-history">
+        {% for bid in recent_bids %}<li><span class="bid-history-mark">{{ bid.team.short_name|default:bid.team.name|initials }}</span><div><strong>{{ bid.team.name }}</strong><small>{{ bid.lot.player.name }}</small></div><b>₹{{ bid.amount|inr }}</b></li>{% endfor %}
+      </ol>{% else %}<p class="auction-muted">The first bid will set the tone. Bid history will build here.</p>{% endif %}
+    </section>
+    <section class="auction-panel auction-summary-panel">
+      <div class="auction-section-heading"><div><p class="eyebrow">THE NUMBERS</p><h2>Auction stats</h2></div></div>
+      <dl class="auction-stat-list">
+        <div><dt>Players auctioned</dt><dd>{{ auctioned_count }} <small>/ {{ total_lots }}</small></dd></div>
+        <div><dt>Highest bid</dt><dd>{% if highest_bid %}₹{{ highest_bid|inr }}{% else %}—{% endif %}</dd></div>
+        <div><dt>Most expensive</dt><dd>{% if top_sale %}{{ top_sale.player.name }} <small>₹{{ top_sale.sold_price|inr }}</small>{% else %}—{% endif %}</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="auction-bottom-grid">
+    <section class="auction-panel auction-queue-panel">
+      <div class="auction-section-heading"><div><p class="eyebrow">UP NEXT</p><h2>Player queue</h2></div><span>{{ queued_count }} remaining</span></div>
+      {% if upcoming_lots %}<ol class="auction-queue-list">
+        {% for lot in upcoming_lots %}<li><span class="queue-number">{{ lot.position|stringformat:"02d" }}</span>{% if lot.player.photo %}<img src="{{ lot.player.photo.url }}" alt="" loading="lazy">{% else %}<span class="queue-avatar">{{ lot.player.name|initials }}</span>{% endif %}<div class="queue-player-copy"><strong>{{ lot.player.name }} {% if lot.is_marquee %}<em>✦ MARQUEE</em>{% endif %}</strong><small>{{ lot.category_name }} · Base ₹{{ lot.base_price|inr }}</small></div><span class="queue-state">UPCOMING</span></li>{% endfor %}
+      </ol>{% else %}<p class="auction-muted">No players are waiting in the queue.</p>{% endif %}
+    </section>
+    <section class="auction-panel auction-results-panel">
+      <div class="auction-section-heading"><div><p class="eyebrow">RECENTLY CALLED</p><h2>Results</h2></div><span>{{ sold_count }} sold · {{ unsold_count }} unsold</span></div>
+      {% if previous_lots %}<ol class="auction-result-list">
+        {% for lot in previous_lots %}<li class="{% if lot.status == 'sold' %}result-sold{% else %}result-unsold{% endif %}"><div><strong>{{ lot.player.name }}</strong><small>{{ lot.category_name }}{% if lot.is_marquee %} · Marquee{% endif %}</small></div><span class="result-label">{% if lot.status == "sold" %}SOLD{% else %}UNSOLD{% endif %}</span><b>{% if lot.status == "sold" %}₹{{ lot.sold_price|inr }}{% else %}—{% endif %}</b></li>{% endfor %}
+      </ol>{% else %}<p class="auction-muted">Sold and unsold results will appear here as the auction progresses.</p>{% endif %}
+    </section>
+    <section class="auction-panel auction-category-panel">
+      <div class="auction-section-heading"><div><p class="eyebrow">CATEGORY SALES</p><h2>By player category</h2></div></div>
+      {% if category_sales %}<ul class="auction-category-sales">
+        {% for row in category_sales %}<li><span>{{ row.category_name|default:"Uncategorised" }}</span><b>{{ row.players_sold }} sold</b><strong>₹{{ row.total_spend|inr }}</strong></li>{% endfor %}
+      </ul>{% else %}<p class="auction-muted">Category totals will appear after the first sale.</p>{% endif %}
+    </section>
+  </div>
+{% else %}
+  <div class="auction-no-announcement">
+    <div class="auction-empty-mark">SPL</div>
+    <div><p class="eyebrow">SPL AUCTION ROOM</p><h2>No auction announced</h2><p>There is no active auction to follow yet. Once organisers publish a player queue, the live presentation, team purses and results will appear here.</p>
+      {% if user.is_staff %}<a class="btn" href="{% url 'auction_config' %}">Configure an auction</a>{% endif %}
+    </div>
+  </div>
+{% endif %}
+</div>

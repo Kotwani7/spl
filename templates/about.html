@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Our story · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">ULHASNAGAR. UNITED BY CRICKET.</p>
+      <h1>
+        Local roots.
+        <br>
+        League spirit.
+      </h1>
+      <p class="lead">A shared passion for cricket. A stage for the Sindhi community.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <div class="prose">
+      <h2>One community. One game.</h2>
+      <p>Sindhi Premier League brings players, families and fans together in Ulhasnagar. It is a place for talent to emerge, rivalries to grow and the spirit of cricket to take centre stage.</p>
+      <p>Behind every scorecard is a team, a community and a story worth following.</p>
+    </div>
+    <div class="story-values">
+      <article>
+        <h3>Competition.</h3>
+        <p>A stage for emerging and experienced players to compete and make their mark.</p>
+      </article>
+      <article>
+        <h3>Community.</h3>
+        <p>Teams, supporters and partners coming together through a shared love of cricket.</p>
+      </article>
+      <article>
+        <h3>Sportsmanship.</h3>
+        <p>Respect for the opposition. Pride in the performance. The game comes first.</p>
+      </article>
+    </div>
+  </section>
+  <section class="dark-panel section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">EVERY SEASON ADDS A CHAPTER</p>
+          <h2>The league archive.</h2>
+        </div>
+      </div>
+      <div class="archive-grid">
+        {% for season in season_history %}
+          <article class="archive-season">
+            <p class="eyebrow">SINDHI PREMIER LEAGUE</p>
+            <h3>Season {{ season.season }}</h3>
+            {% if season.start_date %}
+              <p>{{ season.start_date|date:'d M Y' }}{% if season.end_date %} – {{ season.end_date|date:'d M Y' }}{% endif %}
+              </p>
+            {% endif %}
+            <p>{{ season.teams_count }} team entries · {{ season.matches_count }} matches</p>
+            <a class="text-link"
+               href="{% url 'matches' %}?season={{ season.season }}">Explore the season</a>
+          </article>
+        {% empty %}
+          <p>Season history will appear as archives are added.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="container section">
+    <h2>Be part of what comes next.</h2>
+    <p class="body-copy section-intro">Player, supporter or partner — there’s a place for you in the SPL story.</p>
+    <div class="actions">
+      <a class="btn" href="{% url 'register' %}">Join the league</a>
+      <a class="btn btn-outline" href="{% url 'contact' %}">Contact the organisers</a>
+    </div>
+  </section>
+{% endblock %}

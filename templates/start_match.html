@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Start a match · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">ORGANISER DESK</p>
+      <h1>Take it to the pitch.</h1>
+      <p class="lead">Choose the season and teams. Team A bats first.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <div class="breadcrumb">
+      <a href="{% url 'organiser' %}">Organiser desk</a>
+      <span>/</span>
+      <span>Start match</span>
+    </div>
+    <form method="post" class="start-match-form">
+      {% csrf_token %}
+      <label for="tournament">
+        Tournament<select name="tournament" id="tournament" required>
+        <option value="">Select season</option>
+        {% for tournament in tournaments %}
+          <option value="{{ tournament.pk }}">Season {{ tournament.season }} · {{ tournament.name }}</option>
+        {% endfor %}
+        </select>
+      </label>
+      <label for="team-a">
+        Team A · batting first<select name="team_a" id="team-a" required>
+        <option value="">Select batting team</option>
+        {% for team in teams %}
+          <option value="{{ team.pk }}"
+                  data-tournament="{{ team.tournament_id }}">{{ team.name }} · Season {{ team.tournament.season }}</option>
+        {% endfor %}
+        </select>
+      </label>
+      <label for="team-b">
+        Team B · bowling first<select name="team_b" id="team-b" required>
+        <option value="">Select bowling team</option>
+        {% for team in teams %}
+          <option value="{{ team.pk }}"
+                  data-tournament="{{ team.tournament_id }}">{{ team.name }} · Season {{ team.tournament.season }}</option>
+        {% endfor %}
+        </select>
+      </label>
+      <p class="form-note">Starting a match creates a live fixture and its first innings.</p>
+      <button class="btn" type="submit">Start live match</button>
+    </form>
+  </section>
+{% endblock %}
+{% block scripts %}
+  <script>const seasonSelect=document.querySelector('#tournament');function filterTeams(){document.querySelectorAll('#team-a, #team-b').forEach(select=>{[...select.options].forEach(option=>{if(!option.value)return;const unavailable=Boolean(seasonSelect.value&&option.dataset.tournament!==seasonSelect.value);option.hidden=unavailable;option.disabled=unavailable;if(unavailable&&option.selected)select.value='';});});}seasonSelect.addEventListener('change',filterTeams);filterTeams();</script>
+{% endblock %}

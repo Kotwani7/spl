@@ -1,0 +1,19 @@
+{% load league_ui %}
+<a class="player-tile" href="{% url 'player_detail' player.pk %}">
+  <div class="player-portrait">
+    {% if player.photo %}
+      <img src="{{ player.photo.url }}"
+           alt="{{ player.name }}"
+           loading="lazy"
+           width="360"
+           height="420">
+    {% endif %}
+    <span class="portrait-initials image-fallback" aria-hidden="true">{{ player.name|initials }}</span>
+    <span class="portrait-caption">SPL · PLAYER</span>
+  </div>
+  <div class="player-tile-copy">
+    <h3>{{ player.name }}</h3>
+    <p>{{ player.city|default:"SPL player" }}</p>
+    <span class="text-link">Player profile</span>
+  </div>
+</a>

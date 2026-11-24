@@ -1,0 +1,197 @@
+{% load static league_ui %}
+{% league_content as ui %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#101C35">
+    <link rel="icon"
+          type="image/svg+xml"
+          href="{% static 'assets/favicon.svg' %}">
+    <meta name="description"
+          content="The home of Sindhi Premier League. Explore match scorecards, teams, player profiles and season statistics from Ulhasnagar's cricket community.">
+    <title>{% block title %}SPL · Sindhi Premier League{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'fonts/fonts.css' %}?v=20261120-2">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=20261124-1">
+    <script src="{% static 'js/site.js' %}?v=20261124-1" defer></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body data-page="{{ request.resolver_match.url_name }}">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="masthead">
+      <div class="nav-inner">
+        <a class="brand"
+           href="{% url 'home' %}"
+           aria-label="SPL · Sindhi Premier League home">
+          <span class="brand-word">SPL<span class="brand-slash"></span>
+          </span>
+          <span class="brand-name">SINDHI
+            <br>
+          PREMIER LEAGUE</span>
+        </a>
+        {% with page=request.resolver_match.url_name %}
+          <nav class="desktop-nav" aria-label="Main navigation">
+            <a href="{% url 'home' %}"{% if page == 'home' %} aria-current="page"{% endif %}>Home</a>
+            <a href="{% url 'matches' %}"{% if page == 'matches' or page == 'match_detail' or page == 'live_match' %} aria-current="page"{% endif %}>Matches</a>
+            <a href="{% url 'teams' %}"{% if page == 'teams' or page == 'team_detail' %} aria-current="page"{% endif %}>Teams</a>
+            <a href="{% url 'players' %}"{% if page == 'players' or page == 'player_detail' %} aria-current="page"{% endif %}>Players</a>
+            <a href="{% url 'leaderboards' %}"{% if page == 'leaderboards' %} aria-current="page"{% endif %}>Statistics</a>
+            <a href="{% url 'auction' %}"{% if page == 'auction' %} aria-current="page"{% endif %}>Auction</a>
+            <button type="button"
+                    data-more-open
+                    aria-haspopup="dialog">More {% include "components/icon.html" with name="chevron" %}</button>
+          </nav>
+        {% endwith %}
+        <a class="nav-register" href="{% url 'register' %}">Join the league</a>
+        <button class="mobile-menu icon-button"
+                type="button"
+                data-more-open
+                aria-label="Open more navigation"
+                aria-haspopup="dialog">{% include "components/icon.html" with name="more" %}</button>
+      </div>
+    </header>
+    {% block ticker %}
+      <section class="score-ticker" aria-label="Latest match scores">
+        <div class="ticker-inner">
+          <a class="ticker-label" href="{% url 'matches' %}">MATCH<br>CENTRE<span>Scores & results</span>
+          </a>
+          <div class="ticker-track"
+               tabindex="0"
+               role="region"
+               aria-label="Scroll through match scores">
+            {% for match in ui.ticker %}
+              <a class="ticker-match" href="{% url 'match_detail' match.pk %}">
+                <div class="ticker-meta">
+                  <span{% if match.status == 'live' %} class="live-label"{% endif %}>{{ match.get_status_display }}</span>
+                  <span>Season {{ match.tournament.season }} · {{ match.stage|default:"League" }}</span>
+                </div>
+                {% with score=match|score_for:match.team_a %}
+                  <div class="ticker-side">
+                    {% include "components/team_mark.html" with team=match.team_a size="small" %}
+                    <abbr title="{{ match.team_a.name }}">{{ match.team_a|abbreviation }}</abbr>
+                    <strong>{{ score.score }} <small>{% if score.overs %}({{ score.overs }}){% endif %}</small>
+                    </strong>
+                  </div>
+                {% endwith %}
+                {% with score=match|score_for:match.team_b %}
+                  <div class="ticker-side">
+                    {% include "components/team_mark.html" with team=match.team_b size="small" %}
+                    <abbr title="{{ match.team_b.name }}">{{ match.team_b|abbreviation }}</abbr>
+                    <strong>{{ score.score }} <small>{% if score.overs %}({{ score.overs }}){% endif %}</small>
+                    </strong>
+                  </div>
+                {% endwith %}
+                <p>{{ match.result_text|default:match.ground|default:"Schedule to be confirmed" }}</p>
+              </a>
+            {% empty %}
+              <p class="ticker-empty">The next match starts here. Fixtures will appear once announced.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endblock %}
+    <main id="main-content" tabindex="-1">
+      {% for message in messages %}
+        <div class="container">
+          <div class="notice" role="status">{{ message }}</div>
+        </div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-top">
+        <div>
+          <a class="brand footer-brand" href="{% url 'home' %}">
+            <span class="brand-word">SPL<span class="brand-slash"></span>
+            </span>
+            <span class="brand-name">SINDHI
+              <br>
+            PREMIER LEAGUE</span>
+          </a>
+          <p>
+            Local roots. A shared love of the game.
+            <br>
+            Ulhasnagar, Maharashtra.
+          </p>
+        </div>
+        <div>
+          <h2>The league</h2>
+          <a href="{% url 'about' %}">Our story</a>
+          <a href="{% url 'teams' %}">Teams</a>
+          <a href="{% url 'players' %}">Players</a>
+        </div>
+        <div>
+          <h2>The game</h2>
+          <a href="{% url 'matches' %}">Match centre</a>
+          <a href="{% url 'leaderboards' %}">Statistics</a>
+          <a href="{% url 'auction' %}">Auction centre</a>
+        </div>
+        <div>
+          <h2>Get involved</h2>
+          <a href="{% url 'register' %}">Registration</a>
+          <a href="{% url 'sponsors' %}">Our partners</a>
+          <a href="{% url 'contact' %}">Contact</a>
+          <a href="{% url 'organiser' %}">Organiser desk</a>
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <span>© {% now "Y" %} Sindhi Premier League</span>
+        <a href="https://unsplash.com/photos/mUtQXjjLPbw"
+           target="_blank"
+           rel="noopener noreferrer">Cricket photography: Marcus Wallis / Unsplash</a>
+        <span>Made for the love of cricket.</span>
+      </div>
+    </footer>
+    {% with page=request.resolver_match.url_name %}
+      <nav class="bottom-nav" aria-label="Mobile navigation">
+        <a href="{% url 'home' %}"{% if page == 'home' %} aria-current="page"{% endif %}>
+          {% include "components/icon.html" with name="home" %}
+          <span>Home</span>
+        </a>
+        <a href="{% url 'matches' %}"{% if page == 'matches' or page == 'match_detail' or page == 'live_match' %} aria-current="page"{% endif %}>
+          {% include "components/icon.html" with name="matches" %}
+          <span>Matches</span>
+        </a>
+        <a href="{% url 'auction' %}"{% if page == 'auction' %} aria-current="page"{% endif %}>
+          {% include "components/icon.html" with name="auction" %}
+          <span>Auction</span>
+        </a>
+        <a href="{% url 'leaderboards' %}"{% if page == 'leaderboards' %} aria-current="page"{% endif %}>
+          {% include "components/icon.html" with name="stats" %}
+          <span>Stats</span>
+        </a>
+        <button type="button"
+                data-more-open
+                aria-label="More navigation"
+{% if page != 'home' and page != 'matches' and page != 'match_detail' and page != 'live_match' and page != 'leaderboards' %}aria-current="page"{% endif %}
+                aria-haspopup="dialog">
+          {% include "components/icon.html" with name="more" %}
+          <span>More</span>
+        </button>
+      </nav>
+    {% endwith %}
+    <dialog id="more-menu" class="more-dialog" aria-labelledby="more-title">
+      <div class="dialog-head">
+        <h2 id="more-title">Explore SPL</h2>
+        <button class="icon-button"
+                type="button"
+                data-dialog-close
+                aria-label="Close navigation">{% include "components/icon.html" with name="close" %}</button>
+      </div>
+      <nav aria-label="More pages">
+        <a href="{% url 'teams' %}">Teams</a>
+        <a href="{% url 'players' %}">Players</a>
+        <a href="{% url 'about' %}">Our story</a>
+        <a href="{% url 'register' %}">Join the league</a>
+        <a href="{% url 'sponsors' %}">Our partners</a>
+        <a href="{% url 'contact' %}">Contact us</a>
+        <a href="{% url 'organiser' %}">Organiser desk</a>
+        <a href="/django-admin/">Admin sign-in</a>
+      </nav>
+      <p>One community. One game.</p>
+    </dialog>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

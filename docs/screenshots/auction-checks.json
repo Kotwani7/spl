@@ -1,0 +1,44 @@
+[
+  {
+    "dialogScrollWidth": 320,
+    "dialogWidth": 320,
+    "publicSelected": "true",
+    "width": 320
+  },
+  {
+    "dialogScrollWidth": 375,
+    "dialogWidth": 375,
+    "publicSelected": "true",
+    "width": 375
+  },
+  {
+    "dialogScrollWidth": 390,
+    "dialogWidth": 390,
+    "publicSelected": "true",
+    "width": 390
+  },
+  {
+    "dialogScrollWidth": 430,
+    "dialogWidth": 430,
+    "publicSelected": "true",
+    "width": 430
+  },
+  {
+    "dialogScrollWidth": 768,
+    "dialogWidth": 768,
+    "publicSelected": "true",
+    "width": 768
+  },
+  {
+    "dialogScrollWidth": 1024,
+    "dialogWidth": 1024,
+    "publicSelected": "true",
+    "width": 1024
+  },
+  {
+    "dialogScrollWidth": 1440,
+    "dialogWidth": 1440,
+    "publicSelected": "true",
+    "width": 1440
+  }
+]

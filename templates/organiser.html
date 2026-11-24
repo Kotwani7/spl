@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Organiser desk · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">AUTHORISED ORGANISERS</p>
+      <h1>Behind the game.</h1>
+      <p class="lead">Manage league records, start matches and work with verified scorecard data.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <div class="stats-strip">
+      <div>
+        <b>{{ teams }}</b>
+        <span>TEAM ENTRIES</span>
+      </div>
+      <div>
+        <b>{{ matches }}</b>
+        <span>MATCHES</span>
+      </div>
+      <div>
+        <b>{{ players }}</b>
+        <span>PLAYERS</span>
+      </div>
+      <div>
+        <b>{{ enquiries }}</b>
+        <span>OPEN ENQUIRIES</span>
+      </div>
+    </div>
+    <div class="two-col">
+      <section>
+        <h2>Manage the league.</h2>
+        <p class="body-copy section-intro">Keep tournament, team, player and sponsor information up to date.</p>
+        <div class="dashboard-links">
+          <a class="btn" href="{% url 'start_match' %}">Start a match</a>
+          <a class="btn btn-outline" href="/django-admin/">Django administration</a>
+        </div>
+      </section>
+      <section>
+        <h2>Import deliveries.</h2>
+        <p class="body-copy section-intro">Upload verified ball-by-ball CSV records.</p>
+        <form method="post" enctype="multipart/form-data" class="start-match-form">
+          {% csrf_token %}
+          <label for="csv-file">
+            Delivery CSV<input type="file" name="csv_file" id="csv-file" accept=".csv" required>
+          </label>
+          <button class="btn" type="submit">Import CSV</button>
+        </form>
+        <p class="form-note section-intro">Only use genuine delivery-level records. Summary scorecards cannot supply ball-by-ball detail.</p>
+      </section>
+    </div>
+    <section class="auction-organiser-callout" aria-labelledby="auction-controls-title">
+      <div class="auction-organiser-callout-copy">
+        <p class="eyebrow">PLAYER AUCTION</p>
+        <h2 id="auction-controls-title">Build the next big signing.</h2>
+        <p class="body-copy">Manage {{ auction_categories }} configurable categories, review the {{ marquee_players }} marquee player{{ marquee_players|pluralize }}, set base prices and run an SPL auction from the organiser controls.</p>
+      </div>
+      <a class="btn" href="{% url 'auction_config' %}">Manage auction & marquee players</a>
+    </section>
+  </section>
+{% endblock %}

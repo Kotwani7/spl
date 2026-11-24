@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}Auction configuration · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero organiser-auction-hero">
+    <div class="container auction-page-heading">
+      <div><p class="eyebrow">ORGANISED BY SPL</p><h1>Auction controls.</h1><p class="lead">Shape the player pool, set category prices, build the queue and run the live auction.</p></div>
+      <div class="auction-room-actions"><a class="btn btn-light" href="{% url 'auction' %}">Open public auction</a><a class="btn btn-outline" href="{% url 'organiser' %}">Organiser desk</a></div>
+    </div>
+  </section>
+  <section class="container section organiser-auction-page">
+    <nav class="auction-admin-nav" aria-label="Auction configuration sections">
+      <a href="#categories">Categories <span>{{ categories|length }}</span></a>
+      <a href="#player-pool">Player pool <span>{{ players|length }}</span></a>
+      <a href="#auction-setup">Auctions <span>{{ auction_list|length }}</span></a>
+      {% if selected_auction %}<a href="#auction-management">Live controls</a>{% endif %}
+    </nav>
+
+    <section class="auction-admin-section" id="categories">
+      <div class="auction-admin-heading"><div><p class="eyebrow">CONFIGURE THE PLAYER TIERS</p><h2>Player categories</h2><p>Set the default base price and order for each category. Existing auction lots retain their saved category and price.</p></div><span class="auction-admin-count">{{ categories|length }} configured</span></div>
+      <form method="post" class="auction-create-category">
+        {% csrf_token %}<input type="hidden" name="action" value="category_save">
+        <div class="auction-form-grid">
+          <label>Category name{{ category_form.name }}</label>
+          <label>Description{{ category_form.description }}</label>
+          <label>Default base price (₹){{ category_form.base_price }}</label>
+          <label>Queue order{{ category_form.position }}</label>
+        </div>
+        <button class="btn" type="submit">Add category</button>
+      </form>
+      {% if categories %}
+        <div class="auction-category-admin-list">
+          {% for category in categories %}
+            <article class="auction-category-admin-card">
+              <form method="post" class="auction-inline-edit-form">
+                {% csrf_token %}<input type="hidden" name="action" value="category_save"><input type="hidden" name="category_id" value="{{ category.pk }}">
+                <div class="auction-form-grid">
+                  <label>Category name{{ category.edit_form.name }}</label>
+                  <label>Description{{ category.edit_form.description }}</label>
+                  <label>Default base price (₹){{ category.edit_form.base_price }}</label>
+                  <label>Queue order{{ category.edit_form.position }}</label>
+                </div>
+                <div class="auction-admin-card-footer"><span>{{ category.player_count }} player{{ category.player_count|pluralize }} · {{ category.lot_count }} saved lot{{ category.lot_count|pluralize }}</span><button class="btn btn-outline" type="submit">Save category</button></div>
+              </form>
+              <form method="post" class="auction-delete-form">
+                {% csrf_token %}<input type="hidden" name="action" value="category_delete"><input type="hidden" name="category_id" value="{{ category.pk }}"><button class="text-button danger-text" type="submit">Delete</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}<p class="auction-muted">No categories yet. Create the tiers that suit this tournament.</p>{% endif %}
+    </section>
+
+    <section class="auction-admin-section" id="player-pool">
+      <div class="auction-admin-heading"><div><p class="eyebrow">PLAYER ANNOUNCEMENTS</p><h2>Player pool & marquee list</h2><p>Use the saved SPL player records, assign a category, add an optional individual price and mark marquee players. Photo and profile changes use the existing player record.</p></div><span class="auction-admin-count">{{ players|length }} shown · {{ marquee_player_count }} marquee</span></div>
+      <form method="get" class="auction-player-category-filter"><label for="player-category-filter">Filter by category</label><select name="category" id="player-category-filter"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.pk }}"{% if selected_category.pk == category.pk %} selected{% endif %}>{{ category.name }}</option>{% endfor %}</select><label class="auction-filter-checkbox"><input type="checkbox" name="marquee" value="1"{% if marquee_only %} checked{% endif %}> Marquee players only</label><button class="btn btn-outline" type="submit">Filter players</button>{% if selected_auction %}<input type="hidden" name="auction" value="{{ selected_auction.pk }}">{% endif %}</form>
+      <details class="auction-admin-disclosure" open>
+        <summary>Add a player record</summary>
+        <form method="post" enctype="multipart/form-data" class="auction-player-form auction-new-player-form">
+          {% csrf_token %}<input type="hidden" name="action" value="player_create">
+          <div class="auction-form-grid">
+            <label>Name{{ player_form.name }}</label><label>City{{ player_form.city }}</label><label>Player photograph{{ player_form.photo }}</label>
+            <label>Player category{{ player_form.auction_category }}</label><label>Individual base price override (₹){{ player_form.auction_base_price }}<small>Leave blank to use the category price.</small></label>
+            <label class="auction-checkbox-label">{{ player_form.is_marquee }} Marquee player</label><label class="auction-checkbox-label">{{ player_form.in_auction_pool }} Add to auction pool</label>
+          </div><button class="btn" type="submit">Add player</button>
+        </form>
+      </details>
+      <div class="auction-player-admin-list">
+        {% for player in players %}
+          <article class="auction-player-admin-card{% if player.is_marquee %} is-marquee{% endif %}">
+            <div class="auction-player-admin-identity">
+              {% if player.photo %}<img src="{{ player.photo.url }}" alt="" loading="lazy">{% else %}<span class="queue-avatar">{{ player.name|initials }}</span>{% endif %}
+              <div><strong>{{ player.name }} {% if player.is_marquee %}<em class="marquee-badge-small">✦ MARQUEE</em>{% endif %}</strong><small>{{ player.city|default:"City not recorded" }} · {% if player.in_auction_pool %}In auction pool{% else %}Outside auction pool{% endif %}</small></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="auction-player-form">
+              {% csrf_token %}<input type="hidden" name="action" value="player_save"><input type="hidden" name="player_id" value="{{ player.pk }}">
+              <div class="auction-form-grid">
+                <label>Name{{ player.edit_form.name }}</label><label>City{{ player.edit_form.city }}</label><label>Change photograph{{ player.edit_form.photo }}</label>
+                <label>Player category{{ player.edit_form.auction_category }}</label>
+                <label>Individual base price override (₹){{ player.edit_form.auction_base_price }}{% if player.effective_auction_base_price is not None %}<small>Effective price: ₹{{ player.effective_auction_base_price|inr }}{% if player.auction_base_price is None %} (category default){% endif %}</small>{% endif %}</label>
+                <label class="auction-checkbox-label">{{ player.edit_form.is_marquee }} Marquee player</label><label class="auction-checkbox-label">{{ player.edit_form.in_auction_pool }} In auction pool</label>
+              </div>
+              <div class="auction-admin-card-footer"><span>{% if player.is_auction_locked %}Auction settings locked after first lot started{% else %}Category price fills the base price when no override is set{% endif %}</span><button class="btn btn-outline" type="submit">Save player</button></div>
+            </form>
+          </article>
+        {% empty %}<p class="auction-muted">No active player records yet.</p>{% endfor %}
+      </div>
+    </section>
+
+    <section class="auction-admin-section" id="auction-setup">
+      <div class="auction-admin-heading"><div><p class="eyebrow">SET THE STAGE</p><h2>Create an auction</h2><p>Player category order seeds the opening queue. Individual lots can then be moved before they reach the block.</p></div></div>
+      <form method="post" class="auction-create-form">
+        {% csrf_token %}<input type="hidden" name="action" value="auction_create">
+        <div class="auction-form-grid">
+          <label>Auction name{{ auction_form.name }}</label><label>Tournament / season{{ auction_form.tournament }}</label><label>Bid increment (₹){{ auction_form.bid_increment }}{{ auction_form.bid_increment.help_text }}</label><label>Opening purse per team (₹){{ auction_form.team_budget }}{{ auction_form.team_budget.help_text }}</label>
+        </div>
+        <fieldset class="auction-player-picker"><legend>Players in the queue</legend><div class="auction-player-picker-list">{{ auction_form.players }}</div></fieldset>
+        <button class="btn" type="submit">Create auction queue</button>
+      </form>
+      {% if auction_list %}
+        <div class="auction-existing-list"><p class="eyebrow">SAVED AUCTIONS</p>
+          {% for item in auction_list %}<a class="auction-existing-item{% if selected_auction.pk == item.pk %} is-selected{% endif %}" href="?auction={{ item.pk }}"><span><strong>{{ item.name }}</strong><small>{{ item.tournament.name }} · Season {{ item.tournament.season }}</small></span><b>{{ item.get_status_display }}</b></a>{% endfor %}
+        </div>
+      {% endif %}
+    </section>
+
+    {% if selected_auction %}
+      <section class="auction-admin-section" id="auction-management">
+        <div class="auction-admin-heading"><div><p class="eyebrow">{{ selected_auction.tournament.name }} · SEASON {{ selected_auction.tournament.season }}</p><h2>{{ selected_auction.name }}</h2><p>State: <strong>{{ selected_auction.get_status_display }}</strong> · {{ selected_auction.lot_list|length }} lots · Increment ₹{{ selected_auction.bid_increment|inr }}</p></div>
+          <div class="auction-lifecycle-controls">
+            {% if selected_auction.status == "draft" or selected_auction.status == "ready" %}
+              <form method="post">{% csrf_token %}<input type="hidden" name="action" value="start"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><button class="btn" type="submit">Start auction</button></form>
+            {% elif selected_auction.status == "running" %}
+              <form method="post">{% csrf_token %}<input type="hidden" name="action" value="pause"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><button class="btn btn-outline" type="submit">Pause</button></form>
+            {% elif selected_auction.status == "paused" %}
+              <form method="post">{% csrf_token %}<input type="hidden" name="action" value="resume"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><button class="btn" type="submit">Resume auction</button></form>
+            {% endif %}
+          </div>
+        </div>
+
+        <section class="auction-current-admin-card">
+          {% if current_lot %}
+            <div><p class="eyebrow">CURRENT LOT · {{ current_lot.position|stringformat:"02d" }}</p><h3>{{ current_lot.player.name }} {% if current_lot.is_marquee %}<span class="marquee-badge-small">✦ MARQUEE</span>{% endif %}</h3><p>{{ current_lot.category_name }} · Base ₹{{ current_lot.base_price|inr }}{% if current_lot.highest_team %} · Leading: {{ current_lot.highest_team.name }} at ₹{{ current_lot.current_bid|inr }}{% else %} · Waiting for opening bid{% endif %}</p></div>
+            {% if selected_auction.status == "running" %}
+              <div class="auction-resolution-controls">
+                <form method="post">{% csrf_token %}<input type="hidden" name="action" value="unsold"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="lot_id" value="{{ current_lot.pk }}"><button class="btn btn-outline" type="submit">Mark unsold</button></form>
+                {% if current_lot.highest_team %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="sold"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="lot_id" value="{{ current_lot.pk }}"><button class="btn" type="submit">Confirm sale · ₹{{ current_lot.current_bid|inr }}</button></form>{% endif %}
+              </div>
+            {% endif %}
+          {% elif selected_auction.status == "finalized" %}<h3>Auction complete</h3><p>All players in this queue have been resolved.</p>
+          {% elif selected_auction.status == "paused" %}<h3>Auction paused</h3><p>The current player and bids remain saved. Resume to continue.</p>
+          {% else %}<h3>No player on the block</h3><p>Start the auction to call the first player in the queue.</p>{% endif %}
+        </section>
+
+        {% if current_lot and selected_auction.status == "running" %}
+          <div class="auction-admin-subhead"><div><p class="eyebrow">TEAM BIDDING</p><h3>Place the next bid</h3><p>Team bids are entered by an authorised SPL organiser using the configured increment and saved in the bid history.</p></div></div>
+          <div class="auction-bid-admin-grid">
+            {% for purse in selected_auction.purse_list %}
+              <form method="post" class="auction-bid-admin-card">
+                {% csrf_token %}<input type="hidden" name="action" value="bid"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="lot_id" value="{{ current_lot.pk }}"><input type="hidden" name="team_id" value="{{ purse.team_id }}">
+                <div class="auction-team-card-head">{% if purse.team.logo %}<img src="{{ purse.team.logo.url }}" alt="" loading="lazy">{% else %}<span class="auction-team-mark">{{ purse.team.short_name|default:purse.team.name|initials }}</span>{% endif %}<strong>{{ purse.team.name }}</strong></div>
+                <p>Remaining purse <b>₹{{ purse.remaining|inr }}</b></p>
+                <label>Bid amount (₹)<input type="number" name="amount" min="{{ current_lot.next_bid }}" max="{{ purse.remaining }}" step="1" value="{{ current_lot.next_bid }}" required></label>
+                <button class="btn btn-outline" type="submit"{% if purse.remaining < current_lot.next_bid or current_lot.highest_team_id == purse.team_id %} disabled{% endif %}>{% if current_lot.highest_team_id == purse.team_id %}Leading bid{% elif purse.remaining < current_lot.next_bid %}Purse too low{% else %}Bid ₹{{ current_lot.next_bid|inr }}{% endif %}</button>
+              </form>
+            {% empty %}<p class="auction-muted">No teams or purses are configured for this tournament.</p>{% endfor %}
+          </div>
+          {% if current_lot.bids.exists %}<ol class="auction-admin-bid-history">{% for bid in current_lot.bids.all %}<li><span>{{ bid.team.name }}</span><strong>₹{{ bid.amount|inr }}</strong><small>{{ bid.placed_at|date:"j M, H:i" }}</small></li>{% endfor %}</ol>{% endif %}
+        {% endif %}
+
+        <div class="auction-admin-subhead"><div><p class="eyebrow">AUCTION RULE</p><h3>Bid increment</h3><p>Every competing bid must meet at least the current bid plus this amount.</p></div></div>
+        {% if selected_auction.status == "draft" or selected_auction.status == "ready" %}
+          <form method="post" class="auction-increment-form">{% csrf_token %}<input type="hidden" name="action" value="increment_save"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><label for="id_bid_increment">Bid increment (₹)</label>{{ increment_form.bid_increment }}<button class="btn btn-outline" type="submit">Save increment</button></form>
+        {% else %}<p class="auction-muted">Configured increment: ₹{{ selected_auction.bid_increment|inr }}. It is locked while results are in progress.</p>{% endif %}
+
+        <div class="auction-admin-subhead"><div><p class="eyebrow">PURSE SETTINGS</p><h3>Team budgets & spend</h3><p>Budgets can be adjusted before the auction starts. Spent amounts are updated with each confirmed sale.</p></div></div>
+        <div class="auction-purse-admin-list">
+          {% for purse in selected_auction.purse_list %}<article class="auction-purse-admin-card"><div><strong>{{ purse.team.name }}</strong><small>Spent ₹{{ purse.spent|inr }} · Remaining ₹{{ purse.remaining|inr }}</small></div>
+            {% if selected_auction.status == "draft" or selected_auction.status == "ready" %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="purse_save"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="purse_id" value="{{ purse.pk }}"><label class="visually-hidden" for="purse-{{ purse.pk }}">{{ purse.team.name }} purse budget</label><input id="purse-{{ purse.pk }}" name="budget" type="number" min="0" step="1" value="{{ purse.budget }}" required><button class="btn btn-outline" type="submit">Update purse</button></form>{% else %}<b>Budget ₹{{ purse.budget|inr }}</b>{% endif %}
+          </article>{% empty %}<p class="auction-muted">No tournament teams were found when this auction was created.</p>{% endfor %}
+        </div>
+
+        <div class="auction-admin-subhead"><div><p class="eyebrow">ORDER THE ANNOUNCEMENTS</p><h3>Player queue</h3><p>Move upcoming players before they reach the block. The current player and completed results remain in place.</p></div></div>
+        <ol class="auction-admin-queue">
+          {% for lot in selected_auction.lot_list %}<li class="{% if lot.status == 'current' %}is-current{% elif lot.status == 'sold' %}is-sold{% elif lot.status == 'unsold' %}is-unsold{% endif %}">
+            <span class="queue-number">{{ lot.position|stringformat:"02d" }}</span>{% if lot.player.photo %}<img src="{{ lot.player.photo.url }}" alt="" loading="lazy">{% else %}<span class="queue-avatar">{{ lot.player.name|initials }}</span>{% endif %}
+            <div class="queue-player-copy"><strong>{{ lot.player.name }}{% if lot.is_marquee %}<em>✦ MARQUEE</em>{% endif %}</strong><small>{{ lot.category_name }} · Base ₹{{ lot.base_price|inr }}</small></div>
+            {% if lot.status == "current" %}<b class="admin-lot-status">ON THE BLOCK</b>{% elif lot.status == "sold" %}<b class="admin-lot-status">SOLD · ₹{{ lot.sold_price|inr }}</b>{% elif lot.status == "unsold" %}<b class="admin-lot-status">UNSOLD</b>{% else %}<b class="admin-lot-status">UPCOMING</b>{% endif %}
+            {% if lot.status == "queued" and selected_auction.status != "running" and selected_auction.status != "paused" %}<div class="auction-queue-move-controls">
+              {% if lot.can_move_up %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="queue_move"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="lot_id" value="{{ lot.pk }}"><input type="hidden" name="direction" value="up"><button type="submit" aria-label="Move {{ lot.player.name }} up">↑</button></form>{% endif %}
+              {% if lot.can_move_down %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="queue_move"><input type="hidden" name="auction_id" value="{{ selected_auction.pk }}"><input type="hidden" name="lot_id" value="{{ lot.pk }}"><input type="hidden" name="direction" value="down"><button type="submit" aria-label="Move {{ lot.player.name }} down">↓</button></form>{% endif %}
+            </div>{% endif %}
+          </li>{% empty %}<li class="auction-muted">The queue is empty.</li>{% endfor %}
+        </ol>
+      </section>
+    {% endif %}
+  </section>
+{% endblock %}

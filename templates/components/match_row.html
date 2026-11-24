@@ -1,0 +1,34 @@
+{% load league_ui %}
+<a class="match-row {% if match.status == 'live' %}is-live{% endif %}"
+   href="{% url 'match_detail' match.pk %}">
+  <div class="match-row-meta">
+    <span{% if match.status == 'live' %} class="live-label"{% endif %}>{{ match.get_status_display }}</span>
+    <span>Season {{ match.tournament.season }} · {{ match.stage|default:"League match" }}</span>
+    <span>{{ match.date|date:"d M Y"|default:"Date to be announced" }}</span>
+  </div>
+  <div class="match-row-teams">
+    {% with score=match|score_for:match.team_a %}
+      <div class="match-side">
+        {% include "components/team_mark.html" with team=match.team_a %}
+        <span class="team-name">{{ match.team_a.name }}</span>
+        <strong>{{ score.score }}{% if score.overs %}
+          <small>({{ score.overs }})</small>
+    {% endif %}
+  </strong>
+</div>
+{% endwith %}
+{% with score=match|score_for:match.team_b %}
+  <div class="match-side">
+    {% include "components/team_mark.html" with team=match.team_b %}
+    <span class="team-name">{{ match.team_b.name }}</span>
+    <strong>{{ score.score }}{% if score.overs %}
+      <small>({{ score.overs }})</small>
+{% endif %}
+</strong>
+</div>
+{% endwith %}
+</div>
+<p class="match-row-result">
+  {% if match.result_text %}{{ match.result_text }}{% elif match.status == "live" %}Follow the action{% else %}{{ match.ground|default:"Venue to be announced" }}{% endif %}
+</p>
+</a>

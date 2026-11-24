@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}SPL Auction Room{% endblock %}
+{% block content %}
+  <section class="page-hero auction-page-hero">
+    <div class="container auction-page-heading">
+      <div>
+        <p class="eyebrow">SINDHI PREMIER LEAGUE · LIVE PLAYER AUCTION</p>
+        <h1>The auction room.</h1>
+        <p class="lead">Every signing starts here. Follow the player on the block, team purses and the full queue.</p>
+      </div>
+      <div class="auction-room-actions">
+        <button class="btn btn-outline" type="button" data-projector>Projector mode</button>
+        {% if auction and auction.status == "running" %}
+          <span class="auction-status-pill is-live"><i></i>{{ auction.get_status_display }}</span>
+        {% elif auction and auction.status == "paused" %}
+          <span class="auction-status-pill is-paused">{{ auction.get_status_display }}</span>
+        {% elif auction %}
+          <span class="auction-status-pill">{{ auction.get_status_display }}</span>
+        {% else %}
+          <span class="auction-status-pill">No auction announced</span>
+        {% endif %}
+        {% if user.is_staff %}<a class="btn btn-outline" href="{% url 'auction_config' %}">Auction controls</a>{% endif %}
+      </div>
+    </div>
+  </section>
+  <section class="container section auction-page" id="auction-page"
+           data-refresh-url="{% url 'auction' %}?fragment=live"
+           data-refresh-active="{{ refresh_active|yesno:'true,false' }}">
+    <div id="auction-live-region" aria-live="polite" aria-atomic="false">
+      {% include "components/auction_live.html" %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Statistics & leaderboards · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">PERFORMANCES THAT STAND OUT</p>
+      <h1>The numbers game.</h1>
+      <p class="lead">Runs scored. Wickets taken. Contributions that make the difference.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <details class="filter-panel">
+      <summary>Filter statistics by season</summary>
+      <form class="filter-bar" method="get">
+        <label for="stats-season">
+          Season<select id="stats-season" name="season">
+          <option value="">All seasons</option>
+          {% for season in seasons %}
+            <option value="{{ season.season }}"{% if request.GET.season == season.season|stringformat:'s' %} selected{% endif %}>Season {{ season.season }}</option>
+          {% endfor %}
+          </select>
+        </label>
+        <button class="btn" type="submit">Apply filter</button>
+      </form>
+    </details>
+    <div class="leaderboard-grid">
+      {% include "components/ranking.html" with title="Most runs" eyebrow="ORANGE CAP · BATTING" rows=stats.batting kind="batting" unit="RUNS" %}
+      {% include "components/ranking.html" with title="Most wickets" eyebrow="PURPLE CAP · BOWLING" rows=stats.bowling kind="bowling" unit="WKTS" %}
+      {% include "components/ranking.html" with title="Most valuable player" eyebrow="ALL-ROUND IMPACT" rows=stats.mvp kind="mvp" unit="PTS" %}
+      {% include "components/ranking.html" with title="Most dot balls" eyebrow="BUILDING THE PRESSURE" rows=stats.dot_balls kind="dots" unit="DOTS" %}
+      {% include "components/ranking.html" with title="Most appearances" eyebrow="SHOWING UP FOR THE TEAM" rows=stats.appearances kind="appearances" unit="MATCHES" %}
+      {% include "components/ranking.html" with title="Fielding contributions" eyebrow="SAFE HANDS" rows=stats.fielding kind="fielding" unit="DISM." %}
+    </div>
+    <p class="form-note stats-disclaimer">Figures reflect the available scorecards and recorded deliveries. Missing historical detail is not inferred. MVP: 1 point per run, 7 per four, 9 per six and 25 per wicket.</p>
+  </section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}Teams · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">THE COLOURS OF OUR COMMUNITY</p>
+      <div class="page-title-row">
+        <h1>Pick your side.</h1>
+        <span class="page-count">{{ teams|length }} team entries</span>
+      </div>
+      <p class="lead">Different names. Different rivalries. The same love of cricket.</p>
+    </div>
+  </section>
+  <section class="container section">
+    <details class="filter-panel">
+      <summary>Filter teams by season</summary>
+      <form class="filter-bar" method="get">
+        <label for="team-season">
+          Season<select name="season" id="team-season">
+          <option value="">All seasons</option>
+          {% for season in seasons %}
+            <option value="{{ season.season }}"{% if request.GET.season == season.season|stringformat:'s' %} selected{% endif %}>Season {{ season.season }}</option>
+          {% endfor %}
+          </select>
+        </label>
+        <button class="btn" type="submit">Apply filter</button>
+      </form>
+    </details>
+    <div class="card-grid">
+      {% for team in teams %}
+        <a class="team-card"
+           href="{% url 'team_detail' team.pk %}"
+           style="--team-accent:{{ team.primary_colour|team_colour }}">
+          {% include "components/team_mark.html" with size="large" %}
+          <p class="eyebrow">SEASON {{ team.tournament.season }}</p>
+          <h2>{{ team.name }}</h2>
+          <p>{{ team.players.count }} registered players · {{ team.matches_played_count }} matches with player records</p>
+          <span class="text-link">Explore the squad</span>
+        </a>
+      {% empty %}
+        <div class="empty-state">
+          <h2>No teams found.</h2>
+          <p>Try another season. Teams will be listed once confirmed by the organisers.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

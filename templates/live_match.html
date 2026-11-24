@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load league_ui %}
+{% block title %}{{ match.team_a.name }} vs {{ match.team_b.name }} · Live centre · SPL{% endblock %}
+{% block content %}
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow{% if match.status == 'live' %} live-label{% endif %}">{{ match.get_status_display }} · SEASON {{ match.tournament.season }}</p>
+      <h1>
+        {{ match.team_a.name }}
+        <br>
+        <span class="muted">vs</span> {{ match.team_b.name }}
+      </h1>
+      <p class="lead">{{ match.ground|default:'Venue not recorded' }} · {{ match.date|date:'d M Y'|default:'Date not recorded' }}</p>
+    </div>
+  </section>
+  <section class="container section">
+    <div class="live-score-layout">
+      <div>
+        <div class="live-scoreboard">
+          <p class="eyebrow{% if match.status == 'live' %} live-label{% endif %}">{{ match.get_status_display }}</p>
+          {% for inn in innings_list %}
+            <div class="innings-score">
+              <span>Innings {{ inn.innings_number }} · {{ inn.batting_team.name }}</span>
+              <b>{{ inn.total_runs }}/{{ inn.wickets }}</b>
+              <small>{{ inn.legal_balls|overs }} overs · {{ inn.legal_balls }} legal balls</small>
+            </div>
+          {% empty %}
+            <p>No live innings recorded. <a class="text-link"
+                                            href="{% url 'match_detail' match.pk %}">View the recorded scorecard</a>
+            </p>
+          {% endfor %}
+        </div>
+        {% if current_innings %}
+          <div class="data-panel">
+            <p class="eyebrow">CURRENT INNINGS</p>
+            <h2>{{ current_innings.batting_team.name }} batting</h2>
+            <p>Bowling: {{ current_innings.bowling_team.name }}</p>
+          </div>
+        {% endif %}
+        <a class="text-link" href="{% url 'match_detail' match.pk %}">Full match scorecard</a>
+      </div>
+      {% if user.is_staff and match.status == "live" and current_innings %}
+        <div class="live-scoring-form">
+          <p class="eyebrow">ORGANISER SCORING</p>
+          <h2>Record the next ball.</h2>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="ball">
+            <label for="batter">
+              Batter<select name="batter" id="batter" required>
+              <option value="">Select batter</option>
+              {% for player in players %}
+                <option value="{{ player.pk }}">{{ player.name }}</option>
+              {% endfor %}
+              </select>
+            </label>
+            <label for="bowler">
+              Bowler<select name="bowler" id="bowler" required>
+              <option value="">Select bowler</option>
+              {% for player in players %}
+                <option value="{{ player.pk }}">{{ player.name }}</option>
+              {% endfor %}
+              </select>
+            </label>
+            <div class="score-input-grid">
+              <label for="batter-runs">
+                Runs off the bat<select name="batter_runs" id="batter-runs">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                </select>
+              </label>
+              <label for="extra-runs">
+                Extra runs<select name="extra_runs" id="extra-runs">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                </select>
+              </label>
+            </div>
+            <label for="extra-type">
+              Extra type<select name="extra_type" id="extra-type">
+              <option value="none">None</option>
+              <option value="wide">Wide</option>
+              <option value="no_ball">No-ball</option>
+              <option value="bye">Bye</option>
+              <option value="leg_bye">Leg-bye</option>
+              </select>
+            </label>
+            <label for="dismissal-type">
+              Wicket<select name="dismissal_type" id="dismissal-type">
+              <option value="">No wicket</option>
+              <option value="bowled">Bowled</option>
+              <option value="caught">Caught</option>
+              <option value="lbw">LBW</option>
+              <option value="run_out">Run out</option>
+              <option value="stumped">Stumped</option>
+              <option value="hit_wicket">Hit wicket</option>
+              <option value="caught_and_bowled">Caught & bowled</option>
+              </select>
+            </label>
+            <label for="dismissed-player">
+              Dismissed player<select name="dismissed_player" id="dismissed-player">
+              <option value="">Select if wicket</option>
+              {% for player in players %}
+                <option value="{{ player.pk }}">{{ player.name }}</option>
+              {% endfor %}
+              </select>
+            </label>
+            <label for="fielder">
+              Fielder<select name="fielder" id="fielder">
+              <option value="">Select fielder if applicable</option>
+              {% for player in players %}
+                <option value="{{ player.pk }}">{{ player.name }}</option>
+              {% endfor %}
+              </select>
+            </label>
+            <button class="btn" type="submit">Add delivery</button>
+          </form>
+          <div class="live-actions">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="end_innings">
+              <button class="btn btn-outline" type="submit">Start next innings</button>
+            </form>
+            <form method="post"
+                  onsubmit="return confirm('Finish this match and save the recorded statistics?')">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="finish">
+              <button class="btn" type="submit">Finish match</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <h2>{% if match.status == "live" %}From the middle.{% else %}The match record.{% endif %}</h2>
+          <p>
+            {% if match.status == "live" %}Recorded deliveries appear below. Refresh to see the latest score.{% elif match.status == "completed" %}This match is complete. Explore its scorecard for the full recorded figures.{% else %}Live scoring will appear when the match begins.{% endif %}
+          </p>
+          <a class="text-link" href="{% url 'match_detail' match.pk %}">Open scorecard</a>
+        </div>
+      {% endif %}
+    </div>
+    <section class="live-deliveries">
+      <p class="eyebrow">BALL BY BALL</p>
+      <h2>Recent deliveries.</h2>
+      {% for inn in innings_list %}
+        <h3>Innings {{ inn.innings_number }} · {{ inn.batting_team.name }}</h3>
+        {% for delivery in inn.deliveries.all|dictsortreversed:'id'|slice:':18' %}
+          <div class="delivery-row">
+            <b>{{ delivery.over_number }}.{{ delivery.ball_number }}</b>
+            <span>{{ delivery.bowler.name }} to {{ delivery.batter.name }}{% if delivery.extra_type != "none" %} · {{ delivery.get_extra_type_display }}{% endif %}
+            </span>
+            <strong>{{ delivery.batter_runs|add:delivery.extra_runs }}{% if delivery.dismissal_type %} W{% endif %}
+            </strong>
+          </div>
+        {% empty %}
+          <p class="muted">No delivery-level records available for this innings.</p>
+        {% endfor %}
+      {% empty %}
+        <p class="muted">Historical scorecards may not include ball-by-ball records.</p>
+      {% endfor %}
+    </section>
+  </section>
+{% endblock %}

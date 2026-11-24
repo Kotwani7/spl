@@ -1,0 +1,157 @@
+# Sindhi Premier League — Full-stack Django website
+
+This project includes a Django backend, SQLite database for local development, responsive mobile navigation, public pages, organiser/admin management, sponsor records, contact enquiry storage, and Season 3 scorecard summaries.
+
+## 1. Windows setup (PowerShell)
+
+Open PowerShell in this project folder:
+
+```powershell
+py -m venv .venv
+.venv\\Scripts\\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+python manage.py makemigrations league
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+Open `http://127.0.0.1:8000/`. Admin: `http://127.0.0.1:8000/django-admin/`.
+
+If PowerShell blocks activation, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`, then activate again.
+
+## 2. Import Season 3 scorecard summaries
+
+The `data/season3.json` file contains the 31 extracted Season 3 scorecard records. After migrations, run:
+
+```powershell
+python manage.py import_season_json --file data/season3.json --season 3
+```
+
+This imports match summary, result text, innings totals, best batting/bowling highlights and extracted scorecard text. It does NOT create ball-by-ball deliveries, so calculated ball-by-ball leaderboards remain empty until valid delivery data is imported.
+
+## 3. Add Season 2
+
+1. Create `source-pdfs/season2/` and put the extracted PDF files inside it (nested folders are okay).
+2. Install the PDF parser: `python -m pip install pypdf`.
+3. Convert PDFs:
+
+```powershell
+python tools/convert_pdfs.py --input source-pdfs/season2 --season 2 --output data/season2.json
+```
+
+4. Inspect `data/season2.json` against the original PDFs.
+5. Import into Django:
+
+```powershell
+python manage.py import_season_json --file data/season2.json --season 2
+```
+
+Do not import a scorecard summary as ball-by-ball data. Results are stored only when extracted from the source.
+
+## 4. Manage the site
+
+Sign in at `/django-admin/`. Add Tournament, Team, Player, Match, Sponsor and Innings records. The Sponsors page is database-driven. Upload sponsor logos through the Sponsor admin form. The organiser page links to Django Admin and supports the existing normalized ball-by-ball CSV importer.
+
+## 5. Contact email and Gmail
+
+The admin/contact address is configured as `vanshkotwani8@gmail.com`. Website contact enquiries are always saved to the database. To send email notifications:
+- Enable 2-Step Verification on the Gmail account.
+- Generate a Google App Password.
+- Put it in `.env` as `EMAIL_HOST_USER=vanshkotwani8@gmail.com` and `EMAIL_HOST_PASSWORD=your-app-password`.
+- Never share the App Password, commit `.env`, or put it in frontend code.
+
+No Gmail credentials are embedded or required to run the website locally.
+
+## 6. Mobile navigation
+
+The top navigation collapses into a menu button on mobile. The menu opens as a full-height vertical navigation panel with all main sections and closes after a link is selected.
+
+## 7. Public launch checklist
+
+This package is ready for local setup and testing, not one-click public deployment. Before publishing:
+- Use a production PostgreSQL database (not SQLite).
+- Set a strong private `SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+- Configure HTTPS, static/media hosting and backups.
+- Deploy using a production WSGI server (e.g. Gunicorn) on a supported host.
+- Create the production admin account securely.
+- Confirm permission and accuracy for all CricHeroes data and logos.
+- Add official registration form URL and confirmed sponsor details.
+
+Do not publish `.env`, database backups, or admin credentials.
+
+
+## Season 2 archive supplied in this conversation
+The uploaded `SPL 2.zip` contains 16 PDFs. All 16 are explicitly labelled **League Matches** in their PDF headers. The ZIP does not include any file labelled Qualifier, Eliminator, Semi Final or Final, so this import classifies all 16 supplied records as League Matches and does not fabricate a playoff bracket or playoff fixtures. If additional playoff PDFs exist, add them to the archive and rerun conversion/import after checking their labels.
+
+The updated `data/season2.json` retains both innings' batter rows, dismissal/status text, batting figures, extras, total, fall of wickets, bowling figures, plus the original extracted text for each match. Some PDF scorecards may contain OCR/text-layout ambiguities; cross-check the displayed rows against the original PDF. The data supplied contains 16 matches, not necessarily the complete Season 2 tournament.
+
+
+## Updated Season 2 + automatic player registration
+The included `data/season2.json` now contains 28 match records (21 League Matches, 4 Quarter Finals, 2 Semi Finals, 1 Final) and full extracted batting/bowling innings for all 28 supplied PDFs. Season 3 roster data is included in `data/season3.json`.
+
+Import both seasons after migrations:
+```powershell
+python manage.py import_season_json --file data/season2.json --season 2
+python manage.py import_season_json --file data/season3.json --season 3
+```
+The importer creates Player records from playing squads, batting rows and bowling rows, and links them to the relevant team where the scorecard identifies the team. Exact case-insensitive names are reused across seasons; ambiguous spelling variants are not automatically merged. CricHeroes deleted-user placeholders are skipped.
+
+Then open Django Admin → Players to review the imported player records and team links.
+
+
+## Updated Season 2 + automatic player registration
+The included `data/season2.json` now contains 28 match records (21 League Matches, 4 Quarter Finals, 2 Semi Finals, 1 Final) and full extracted batting/bowling innings for all 28 supplied PDFs. Season 3 roster data is included in `data/season3.json`.
+
+Import both seasons after migrations:
+```powershell
+python manage.py import_season_json --file data/season2.json --season 2
+python manage.py import_season_json --file data/season3.json --season 3
+```
+The importer creates Player records from playing squads, batting rows and bowling rows, and links them to the relevant team where the scorecard identifies the team. Exact case-insensitive names are reused across seasons; ambiguous spelling variants are not automatically merged. CricHeroes deleted-user placeholders are skipped.
+
+Then open Django Admin → Players to review the imported player records and team links.
+
+Windows shortcut: after installing requirements and creating `.env`, double-click `IMPORT-SEASONS.bat` from the project folder to run migrations and import both Season 2 and Season 3.
+
+
+## Complete Season 2 and Season 3 scorecards
+
+This package includes full scorecard JSON extracted from the supplied CricHeroes PDFs:
+- Season 2: 28 matches (21 league, 4 quarter-final, 2 semi-final, 1 final).
+- Season 3: 31 matches (24 league, 4 quarter-final, 2 semi-final, 1 final).
+- Both seasons include two innings per match with batting rows, bowling rows, extras, to-bat lists, fall-of-wickets text, squad lists and original extracted PDF text.
+- `PlayerMatchStat` is the scorecard-level aggregate used by player profiles and leaderboards. It does not create ball-by-ball `Delivery` records.
+- The importer reuses case-insensitive exact player names and refreshes match/player statistics on re-import. Nicknames and spelling variants are not fuzzy-merged automatically; review the Players admin list for aliases that may need manual consolidation.
+- Bowling overs are aggregated as cricket overs notation (balls, not decimal fractions).
+
+### Import / update after extracting this ZIP
+
+Activate the project virtual environment, then run:
+
+```powershell
+python -m pip install -r requirements.txt
+python manage.py makemigrations league
+python manage.py migrate
+python manage.py import_season_json --file data/season2.json --season 2
+python manage.py import_season_json --file data/season3.json --season 3
+python manage.py runserver
+```
+
+Existing matches are updated by their CricHeroes match IDs. Back up your `db.sqlite3` before importing if it already contains manual edits. Do not delete your database to apply these updates.
+
+
+
+
+SEASON 1
+Matches: 15
+Stages: League Matches 12; Semi Final 2; Final 1
+Date range: 2024-05-03 to 2024-05-05
+Teams as named in source PDFs: 10 distinct strings (some may be spelling variants; review before merging)
+Innings: 30
+Batting rows: 225
+Bowling rows: 154
+Playing squad entries: 360
+Source: 15 supplied CricHeroes PDFs.
+Note: aggregate scorecards only; no ball-by-ball deliveries.

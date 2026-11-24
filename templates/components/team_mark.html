@@ -1,0 +1,11 @@
+{% load league_ui %}
+<span class="team-mark {{ size }}" aria-hidden="true">
+  {% if team.logo %}
+    <img src="{{ team.logo.url }}"
+         alt=""
+         loading="lazy"
+         width="48"
+         height="48">
+  {% endif %}
+  <span class="image-fallback">{{ team|abbreviation }}</span>
+</span>

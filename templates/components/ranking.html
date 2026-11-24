@@ -1,0 +1,38 @@
+<section class="leaderboard-card{% if kind == 'mvp' %} featured{% endif %}">
+  <div class="leaderboard-card-head">
+    <div>
+      <p class="eyebrow">{{ eyebrow }}</p>
+      <h2>{{ title }}</h2>
+    </div>
+  </div>
+  {% if kind == "mvp" %}
+    <p class="leaderboard-explainer">Runs + (4s × 7) + (6s × 9) + (wickets × 25)</p>
+  {% elif kind == "fielding" %}
+    <p class="leaderboard-explainer">Recorded catch and run-out attributions. One point per contribution.</p>
+  {% endif %}
+  <ol class="rank-list">
+    {% for row in rows %}
+      <li class="rank-row"{% if forloop.counter > 10 %} hidden{% endif %}>
+        <span class="rank-number">{{ forloop.counter|stringformat:'02d' }}</span>
+        <span class="rank-player">
+          <b>{{ row.name }}</b>
+          <small>
+            {% if kind == "appearances" %}{{ row.teams }}{% else %}{{ row.team }}{% endif %}
+            {% if kind == "batting" %} · {{ row.matches_played }} matches · SR {{ row.strike_rate }}{% elif kind == "bowling" %} · Economy {{ row.economy }}{% elif kind == "mvp" %} · {{ row.runs }} runs · {{ row.wickets }} wickets{% elif kind == "fielding" %} · {{ row.catches }} catches · {{ row.run_outs }} run-outs{% endif %}
+          </small>
+        </span>
+        <strong>
+          {% if kind == "batting" %}{{ row.runs }}{% elif kind == "bowling" %}{{ row.wickets }}{% elif kind == "mvp" %}{{ row.points }}{% elif kind == "dots" %}{{ row.dot_balls }}{% elif kind == "appearances" %}{{ row.matches_played }}{% elif kind == "fielding" %}{{ row.dismissals }}{% endif %}
+          <small>{{ unit }}</small>
+        </strong>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <p>These rankings will appear when supported figures are recorded.</p>
+      </li>
+    {% endfor %}
+  </ol>
+  {% if rows|length > 10 %}
+    <button class="show-more" type="button">Show next 10</button>
+  {% endif %}
+</section>
