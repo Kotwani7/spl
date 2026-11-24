@@ -1,6 +1,18 @@
 # Setup and deployment status
 
-**Phase 1 is local engineering groundwork, not a production deployment.** The existing Django app runs locally with SQLite. PostgreSQL, Redis, Channels, Docker/Compose, granular roles, reliable concurrent scoring, and the auction engine remain unimplemented. Nothing was published or pushed.
+## Render deployment preparation
+
+The repository now includes a Render Blueprint in `render.yaml`. It provisions a Python web service, a managed PostgreSQL database, and a persistent disk for uploaded media. The blueprint uses paid Render resources because the free service does not provide persistent media storage or a durable production database. Review current [Render pricing](https://render.com/pricing) before applying it.
+
+The web service runs `collectstatic` during build, migrations in Render's pre-deploy step, and Gunicorn against Django's WSGI application. Render generates `SECRET_KEY`; production mode is enabled and the Render hostname is added to Django's host and CSRF settings. Local development continues to use SQLite unless `DATABASE_URL` is set.
+
+**Important: this deploy starts with an empty PostgreSQL database.** The local `db.sqlite3`, `.env`, and backups are intentionally not uploaded. Existing season records, accounts, enquiries, and uploaded images need a separately planned and verified data transfer before the public launch. Do not switch users to the new site until the intended data has been migrated and checked.
+
+To deploy, first push this repository to a Git provider, then in Render choose **New → Blueprint**, connect that repository, review the resources and charges, and apply the blueprint. After the first deploy, create an administrator with `python manage.py createsuperuser` in the Render Shell. If you want the current local data online, arrange a backup and migration rehearsal before importing it.
+
+No Render resources have been created and the site has not been published from this workspace.
+
+**The app remains undeployed.** It runs locally with SQLite. Render configuration now supports PostgreSQL, but no production database is connected or migrated. Redis, Channels, Docker/Compose, granular roles, reliable concurrent scoring, and the production auction engine remain unimplemented. Nothing was published or pushed.
 
 ## Reproducible local checks
 
@@ -45,4 +57,4 @@ Run `python manage.py check --deploy` with the actual production configuration. 
 
 The local backup tool is available now. Scheduled backups, protected off-device replication, retention, production restore drills, alerting, structured/redacted logs, and operational dashboards remain Phase 10 tasks. A local backup next to the application is not off-device disaster recovery.
 
-No production host, Docker services, domain, SMTP credentials, or PostgreSQL target were configured during Phase 1. No Git repository was present; no commits, pushes, releases or hosting access changes were made.
+No production host, domain, SMTP credentials, or PostgreSQL target have been configured. The repository has an `origin` remote, but no commits, pushes, releases or hosting access changes were made for this Render preparation.
