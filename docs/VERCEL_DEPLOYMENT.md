@@ -1,6 +1,6 @@
 # Vercel deployment
 
-Vercel detects this repository as Django from `manage.py` and serves collected static files through its CDN. The root `vercel.json` runs migrations, imports all three season JSON files, and collects static assets during each deployment build.
+Vercel detects this repository as Django from `manage.py` and serves collected static files through its CDN. `tools/vercel_build.sh` runs migrations, imports all three season JSON files, and collects static assets during each deployment build.
 
 Connect a Neon Postgres resource to the Vercel project with the free plan and production environment. The Marketplace integration supplies `DATABASE_URL` to the deployment; do not store the connection string in Git. The import command is repeatable and preserves the match IDs already in the season JSON.
 
