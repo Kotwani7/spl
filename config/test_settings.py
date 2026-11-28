@@ -9,6 +9,18 @@ from .settings import *  # noqa: F403
 SECRET_KEY = "test-only-not-a-deployment-secret"
 DEBUG = False
 ALLOWED_HOSTS = ["testserver", "localhost", "127.0.0.1"]
+# Production WhiteNoise is unnecessary in the isolated test client and may not
+# be installed in lightweight development environments.
+MIDDLEWARE = [
+    item for item in MIDDLEWARE  # noqa: F405
+    if item != "whitenoise.middleware.WhiteNoiseMiddleware"
+]
+STORAGES = {
+    **STORAGES,  # noqa: F405
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
