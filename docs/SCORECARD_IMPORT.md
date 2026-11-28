@@ -15,14 +15,8 @@ Each archive is mapped to its numbered season by its named option. The command m
 
 Matches, teams, and players are reused by their existing identifiers or exact names. Repeated runs update existing match records and player statistics, add missing innings aggregates, and preserve existing database IDs and supplemental scorecard fields. The command does not delete matches, players, statistics, deliveries, or unrelated rows.
 
-## Seed a deployed database
+## Free Render deployment
 
-The PDF ZIPs do not need to be copied to the web server. After the Render service is deployed and migrations have completed, open its Shell and run the existing JSON importer once for each season:
+The repository's `render.yaml` uses Render's free web-service plan and expects a free external PostgreSQL database through the `DATABASE_URL` environment variable. Create the database first, add its connection string in the Render service's Environment settings (never commit it), then deploy. The build runs migrations and imports all three committed season JSON files. The JSON imports are idempotent, so redeploys do not duplicate matches or player statistics. The PDF ZIPs do not need to be copied to the web server.
 
-```sh
-python manage.py import_season_json --file data/season1.json --season 1
-python manage.py import_season_json --file data/season2.json --season 2
-python manage.py import_season_json --file data/season3.json --season 3
-```
-
-Run these commands against the Render service's configured PostgreSQL database. The import is repeatable, but scorecard-derived aggregates are refreshed, so use it only when you intend to sync the season data. Season 3's two results that were blank in the source JSON are included here because the PDFs explicitly state them.
+Render's free web service sleeps after 15 minutes without traffic and can take about a minute to wake. Its local filesystem is ephemeral, so uploaded media files are not durable. Use external object storage if uploaded files need to persist. Season 3's two results that were blank in the source JSON are included because the PDFs explicitly state them.
